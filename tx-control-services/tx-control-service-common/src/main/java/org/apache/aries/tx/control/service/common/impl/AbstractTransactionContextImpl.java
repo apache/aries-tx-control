@@ -27,9 +27,13 @@ import java.util.function.Consumer;
 
 import org.osgi.service.transaction.control.TransactionContext;
 import org.osgi.service.transaction.control.TransactionStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractTransactionContextImpl implements TransactionContext {
 
+	private static final Logger logger = LoggerFactory.getLogger(AbstractTransactionContextImpl.class);
+	
 	protected final AtomicReference<Throwable> firstUnexpectedException = new AtomicReference<>();
 
 	protected final List<Throwable> subsequentExceptions = new ArrayList<>();
@@ -60,7 +64,7 @@ public abstract class AbstractTransactionContextImpl implements TransactionConte
 				} else {
 					subsequentExceptions.add(e);
 				}
-				// TODO log this
+				logger.warn("A pre-completion callback failed with an exception", e);
 			}
 		});
 	}
@@ -70,8 +74,8 @@ public abstract class AbstractTransactionContextImpl implements TransactionConte
 			try {
 				c.accept(status);
 			} catch (Exception e) {
-				recordFailure(e);
-				// TODO log this
+				// Post completion failures do not affect the outcome
+				logger.warn("A post-completion callback failed with an exception", e);
 			}
 		});
 	}
