@@ -141,6 +141,32 @@ public class TransactionControlRunningTest {
 	}
 
 	@Test
+	public void testRequiredIgnoreException() {
+		
+		AtomicReference<TransactionStatus> finalStatus = new AtomicReference<>();
+		
+		Exception userEx = new BindException("Bang!");
+		
+		try {
+			txControl.required(() -> {
+				
+				assertTrue(txControl.activeTransaction());
+				
+				txControl.getCurrentContext().postCompletion(finalStatus::set);
+				
+				txControl.ignoreException(userEx);
+				
+				throw userEx;
+			});
+			fail("Should not be reached");
+		} catch (ScopedWorkException swe) {
+			assertSame(userEx, swe.getCause());
+		}
+		
+		assertEquals(COMMITTED, finalStatus.get());
+	}
+
+	@Test
 	public void testTwoRequiredsNested() {
 
 		AtomicReference<TransactionStatus> finalStatusOuter = new AtomicReference<>();

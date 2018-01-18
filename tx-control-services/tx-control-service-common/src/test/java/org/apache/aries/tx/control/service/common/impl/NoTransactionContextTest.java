@@ -23,7 +23,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.osgi.service.transaction.control.TransactionStatus.COMMITTED;
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 
 import java.util.concurrent.atomic.AtomicInteger;

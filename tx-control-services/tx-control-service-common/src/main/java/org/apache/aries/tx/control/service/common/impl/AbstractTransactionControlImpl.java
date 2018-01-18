@@ -161,8 +161,8 @@ public abstract class AbstractTransactionControlImpl implements TransactionContr
 				result = transactionalWork.call();
 
 			} catch (Throwable t) {
-				//TODO handle noRollbackFor
-				if(requiresRollback(t)) {
+				if(!currentTran.ignoredExceptions.contains(t) && 
+						requiresRollback(t)) {
 					currentTran.safeSetRollbackOnly();
 				}
 				if(endTransaction) {
@@ -239,7 +239,7 @@ public abstract class AbstractTransactionControlImpl implements TransactionContr
 	private final ThreadLocal<AbstractTransactionContextImpl> existingTx = new ThreadLocal<>();
 	
 	private final AtomicBoolean closed = new AtomicBoolean();
-
+	
 	protected abstract AbstractTransactionContextImpl startTransaction(boolean readOnly);
 
 	@Override
@@ -291,8 +291,8 @@ public abstract class AbstractTransactionControlImpl implements TransactionContr
 		return getCurrentContext() != null;
 	}
 
-	private TransactionContext getCurrentTranContextChecked() {
-		TransactionContext toUse = getCurrentContext();
+	private AbstractTransactionContextImpl getCurrentTranContextChecked() {
+		AbstractTransactionContextImpl toUse = existingTx.get();
 		if (toUse == null) {
 			throw new IllegalStateException(
 					"There is no applicable transaction context");
@@ -307,8 +307,7 @@ public abstract class AbstractTransactionControlImpl implements TransactionContr
 
 	@Override
 	public void ignoreException(Throwable t) throws IllegalStateException {
-		// TODO Auto-generated method stub
-
+		getCurrentTranContextChecked().ignoreException(t);
 	}
 
 	public void close() {

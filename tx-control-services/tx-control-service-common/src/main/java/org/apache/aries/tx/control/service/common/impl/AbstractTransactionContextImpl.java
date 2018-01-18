@@ -19,9 +19,12 @@
 package org.apache.aries.tx.control.service.common.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -37,6 +40,8 @@ public abstract class AbstractTransactionContextImpl implements TransactionConte
 	protected final AtomicReference<Throwable> firstUnexpectedException = new AtomicReference<>();
 
 	protected final List<Throwable> subsequentExceptions = new ArrayList<>();
+
+	protected final Set<Throwable> ignoredExceptions = Collections.newSetFromMap(new IdentityHashMap<>());
 
 	protected final List<Runnable> preCompletion = new ArrayList<>();
 
@@ -91,4 +96,8 @@ public abstract class AbstractTransactionContextImpl implements TransactionConte
 	protected abstract void safeSetRollbackOnly();
 
 	public abstract void finish();
+
+	protected void ignoreException(Throwable t) {
+		ignoredExceptions.add(t);
+	}
 }
