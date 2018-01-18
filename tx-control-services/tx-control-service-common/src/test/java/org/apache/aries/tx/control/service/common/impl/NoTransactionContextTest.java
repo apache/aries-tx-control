@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -129,6 +130,22 @@ public class NoTransactionContextTest {
 		ctx.finish();
 		
 		assertEquals(5, value.get());
+	}
+
+	@Test
+	public void testPreCompletionRegisterPreCompletion() throws Exception {
+		
+		AtomicInteger value = new AtomicInteger(0);
+		
+		ctx.preCompletion(() -> ctx.preCompletion(() -> value.compareAndSet(1, 5)));
+		
+		assertEquals(0, value.getAndSet(1));
+		
+		ctx.finish();
+		
+		assertTrue(ctx.firstUnexpectedException.get() instanceof IllegalStateException);
+		
+		assertEquals(1, value.get());
 	}
 
 	@Test

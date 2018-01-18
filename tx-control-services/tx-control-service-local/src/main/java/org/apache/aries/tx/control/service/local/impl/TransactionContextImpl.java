@@ -42,6 +42,8 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 	final List<LocalResource> resources = new ArrayList<>();
 
 	private final boolean readOnly;
+	
+	private boolean workBodyFinished;
 
 	private AtomicReference<TransactionStatus> tranStatus = new AtomicReference<>(ACTIVE);
 
@@ -115,8 +117,8 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 
 	@Override
 	public void preCompletion(Runnable job) throws IllegalStateException {
-		if (tranStatus.get().compareTo(MARKED_ROLLBACK) > 0) {
-			throw new IllegalStateException("The current transaction is in state " + tranStatus);
+		if (workBodyFinished) {
+			throw new IllegalStateException("The current transactional work has finished executing so a pre-completion callback can no longer be registered");
 		}
 
 		preCompletion.add(job);
@@ -126,7 +128,7 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 	public void postCompletion(Consumer<TransactionStatus> job) throws IllegalStateException {
 		TransactionStatus status = tranStatus.get();
 		if (status == COMMITTED || status == ROLLED_BACK) {
-			throw new IllegalStateException("The current transaction is in state " + tranStatus);
+			throw new IllegalStateException("The current transaction is complete so a post-completion callback can no longer be registered");
 		}
 
 		postCompletion.add(job);
@@ -168,6 +170,7 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 
 	@Override
 	public void finish() {
+		workBodyFinished = true;
 		
 		beforeCompletion(() -> setRollbackOnly());
 

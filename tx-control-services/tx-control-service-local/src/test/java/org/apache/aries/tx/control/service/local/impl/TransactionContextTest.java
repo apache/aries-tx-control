@@ -327,6 +327,24 @@ public class TransactionContextTest {
 		
 		Mockito.verify(localResource).rollback();
 	}
+	
+	@Test
+	public void testLocalResourcePreCompletionRegisterPreCompletion() throws Exception {
+		
+		ctx.registerLocalResource(localResource);
+		
+		Mockito.doAnswer(i -> {
+			assertEquals(ROLLING_BACK, ctx.getTransactionStatus());
+			return null;
+		}).when(localResource).rollback();
+		
+		
+		ctx.preCompletion(() -> ctx.preCompletion(() -> {}));
+		
+		ctx.finish();
+		
+		Mockito.verify(localResource).rollback();
+	}
 
 	@Test
 	public void testLocalResourcePostCommitException() throws Exception {
