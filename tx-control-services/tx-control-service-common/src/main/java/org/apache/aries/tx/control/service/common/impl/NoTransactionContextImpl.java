@@ -20,7 +20,7 @@ package org.apache.aries.tx.control.service.common.impl;
 
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import javax.transaction.xa.XAResource;
@@ -32,7 +32,11 @@ import org.osgi.service.transaction.control.TransactionStatus;
 public class NoTransactionContextImpl extends AbstractTransactionContextImpl
 		implements TransactionContext {
 
-	private final AtomicBoolean finished = new AtomicBoolean(false);
+	private enum Status {
+		WORKING, PRE, POST;
+	}
+	
+	private final AtomicReference<Status> status = new AtomicReference<>(Status.WORKING);
 
 	public NoTransactionContextImpl() {
 		super();
@@ -60,9 +64,9 @@ public class NoTransactionContextImpl extends AbstractTransactionContextImpl
 
 	@Override
 	public void preCompletion(Runnable job) throws IllegalStateException {
-		if (finished.get()) {
+		if (status.get() != Status.WORKING) {
 			throw new IllegalStateException(
-					"The transaction context has finished");
+					"The scoped work has returned. No more pre-completion callbacks can be registered");
 		}
 		
 		preCompletion.add(job);
@@ -71,9 +75,9 @@ public class NoTransactionContextImpl extends AbstractTransactionContextImpl
 	@Override
 	public void postCompletion(Consumer<TransactionStatus> job)
 			throws IllegalStateException {
-		if (finished.get()) {
+		if (status.get() == Status.POST) {
 			throw new IllegalStateException(
-					"The transaction context has finished");
+					"Post completion callbacks have begun. No more post-completion callbacks can be registered");
 		}
 
 		postCompletion.add(job);
@@ -106,13 +110,14 @@ public class NoTransactionContextImpl extends AbstractTransactionContextImpl
 
 	@Override
 	protected boolean isAlive() {
-		return !finished.get();
+		return status.get() == Status.WORKING;
 	}
 	
 	@Override
 	public void finish() {
-		if(finished.compareAndSet(false, true)) {
+		if(status.compareAndSet(Status.WORKING, Status.PRE)) {
 			beforeCompletion(() -> {});
+			status.set(Status.POST);
 			afterCompletion(NO_TRANSACTION);
 		}
 	}

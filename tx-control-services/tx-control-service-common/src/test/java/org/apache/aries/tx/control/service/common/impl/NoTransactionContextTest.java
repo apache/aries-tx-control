@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.osgi.service.transaction.control.TransactionStatus.COMMITTED;
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -235,6 +236,20 @@ public class NoTransactionContextTest {
 		ctx.finish();
 		
 		assertEquals(5, value.get());
+	}
+	
+	@Test
+	public void testPreCompletionRegisterPostCompletion() throws Exception {
+		
+		AtomicInteger value = new AtomicInteger(2);
+		
+		ctx.preCompletion(() -> ctx.postCompletion(t -> value.compareAndSet(1, t.ordinal())));
+		
+		assertEquals(2, value.getAndSet(1));
+		
+		ctx.finish();
+		
+		assertEquals(NO_TRANSACTION.ordinal(), value.get());
 	}
 
 	@Test(expected=IllegalStateException.class)
