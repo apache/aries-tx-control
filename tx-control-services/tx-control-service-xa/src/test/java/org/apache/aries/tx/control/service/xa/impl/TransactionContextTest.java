@@ -467,6 +467,32 @@ public class TransactionContextTest {
 		
 		Mockito.verifyNoMoreInteractions(xaResource);
 	}
+	
+	@Test
+	public void tesXAResourcePreCompletionRegisterPreCompletion() throws Exception {
+		
+		ctx.registerXAResource(xaResource, null);
+		
+		Mockito.doAnswer(i -> {
+			assertEquals(ROLLING_BACK, ctx.getTransactionStatus());
+			return null;
+		}).when(xaResource).rollback(Mockito.any(Xid.class));
+		
+		ctx.preCompletion(() -> ctx.preCompletion(() -> {}));
+		
+		ctx.finish();
+		
+		ArgumentCaptor<Xid> captor = ArgumentCaptor.forClass(Xid.class);
+		
+		InOrder inOrder = Mockito.inOrder(xaResource);
+		
+		inOrder.verify(xaResource).start(captor.capture(), Mockito.eq(XAResource.TMNOFLAGS));
+		inOrder.verify(xaResource).setTransactionTimeout(Mockito.anyInt());
+		inOrder.verify(xaResource).end(Mockito.eq(captor.getValue()), Mockito.eq(XAResource.TMFAIL));
+		inOrder.verify(xaResource).rollback(Mockito.eq(captor.getValue()));
+		
+		Mockito.verifyNoMoreInteractions(xaResource);
+	}
 
 	@Test
 	public void testXAResourcePostCommitException() throws Exception {

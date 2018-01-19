@@ -70,6 +70,8 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 	private final boolean readOnly;
 
 	private LocalResourceSupport localResourceSupport;
+	
+	private boolean noMorePreCompletion;
 
 	public TransactionContextImpl(RecoveryWorkAroundTransactionManager transactionManager, 
 			boolean readOnly, LocalResourceSupport localResourceSupport) {
@@ -195,9 +197,8 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 
 	@Override
 	public void preCompletion(Runnable job) throws IllegalStateException {
-		TransactionStatus status = getTransactionStatus();
-		if (status.compareTo(MARKED_ROLLBACK) > 0) {
-			throw new IllegalStateException("The current transaction is in state " + status);
+		if (noMorePreCompletion) {
+			throw new IllegalStateException("The current transactional work has finished executing so a pre-completion callback can no longer be registered");
 		}
 
 		preCompletion.add(job);
@@ -444,6 +445,7 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 		
 		@Override
 		public void beforeCompletion() {
+			noMorePreCompletion = true;
 			TransactionContextImpl.this.beforeCompletion(() -> safeSetRollbackOnly());
 		}
 
