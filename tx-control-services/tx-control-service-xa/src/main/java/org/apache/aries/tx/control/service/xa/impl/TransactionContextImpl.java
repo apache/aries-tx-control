@@ -318,7 +318,9 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 					}
 				}
 			} catch (Exception e) {
-				recordFailure(e);
+				TransactionException te = e instanceof TransactionException ? (TransactionException) e :
+					new TransactionException("An error occurred in the transaction", e);
+				recordFailure(te);
 			}
 		} finally {
 			try {
