@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.ResourceProvider;
 import org.osgi.service.transaction.control.TransactionContext;
@@ -44,6 +45,8 @@ import org.osgi.service.transaction.control.TransactionContext;
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionControlStatusTest {
 
+	@Mock
+	BundleContext ctx;
 	@Mock
 	ResourceProvider<Object> testProvider;
 	@Mock
@@ -58,7 +61,7 @@ public class TransactionControlStatusTest {
 
 		resource = new Object();
 		
-		txControl = new TransactionControlImpl(null, Collections.emptyMap());
+		txControl = new TransactionControlImpl(ctx, Collections.emptyMap());
 	}
 
 	@Test

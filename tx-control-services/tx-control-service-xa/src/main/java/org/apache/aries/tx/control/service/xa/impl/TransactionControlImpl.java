@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.resource.spi.IllegalStateException;
 import javax.transaction.SystemException;
 import javax.transaction.xa.XAResource;
 
@@ -153,19 +152,21 @@ public class TransactionControlImpl extends AbstractTransactionControlImpl {
 	}
 
 	private HOWLLog getLog(BundleContext ctx) throws Exception {
-		Object recovery = config.getOrDefault("recovery.log.enabled", false);
+		Object recovery = config.getOrDefault("recovery.log.enabled", 
+				Boolean.parseBoolean(String.valueOf(ctx.getProperty(
+						"org.apache.aries.tx.control.service.xa.recovery.log.enabled"))));
 		
 		if (recovery instanceof Boolean ? (Boolean) recovery : Boolean.valueOf(recovery.toString())) {
-			String logFileExt = "log";
+            String logFileExt = "log";
             String logFileName = "transaction";
             
             String logFileDir;
 
             Object o = config.get("recovery.log.dir");
             if(o == null) {
-            	logFileDir = ctx.getDataFile("recoveryLog").getAbsolutePath();
+                logFileDir = ctx.getDataFile("recoveryLog").getAbsolutePath();
             } else {
-            	logFileDir = o.toString();
+                logFileDir = o.toString();
             }
             
             File f = new File(logFileDir);
@@ -264,6 +265,7 @@ public class TransactionControlImpl extends AbstractTransactionControlImpl {
 		
 		props.put("osgi.xa.enabled", Boolean.TRUE);
 		props.put("osgi.local.enabled", getLocalResourceSupport() != DISABLED);
+		props.put("osgi.recovery.enabled", log != null);
 		props.put(Constants.SERVICE_DESCRIPTION, "The Apache Aries Transaction Control Service for XA Transactions");
 		props.put(Constants.SERVICE_VENDOR, "Apache Aries");
 		

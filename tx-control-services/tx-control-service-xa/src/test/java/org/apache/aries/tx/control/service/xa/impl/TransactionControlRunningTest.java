@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.ResourceProvider;
 import org.osgi.service.transaction.control.ScopedWorkException;
@@ -44,6 +45,8 @@ import org.osgi.service.transaction.control.TransactionStatus;
 public class TransactionControlRunningTest {
 
 	@Mock
+	BundleContext ctx;
+	@Mock
 	ResourceProvider<Object> testProvider;
 	@Mock
 	LocalResource testResource;
@@ -52,7 +55,7 @@ public class TransactionControlRunningTest {
 
 	@Before
 	public void setUp() throws Exception {
-		txControl = new TransactionControlImpl(null, Collections.emptyMap());
+		txControl = new TransactionControlImpl(ctx, Collections.emptyMap());
 	}
 
 	@Test

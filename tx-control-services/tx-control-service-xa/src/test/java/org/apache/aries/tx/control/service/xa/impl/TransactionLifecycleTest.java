@@ -30,12 +30,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.ResourceProvider;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionLifecycleTest {
 
+	@Mock
+	BundleContext ctx;
 	@Mock
 	ResourceProvider<Object> testProvider;
 	@Mock
@@ -45,7 +48,7 @@ public class TransactionLifecycleTest {
 
 	@Before
 	public void setUp() throws Exception {
-		txControl = new TransactionControlImpl(null, Collections.emptyMap());
+		txControl = new TransactionControlImpl(ctx, Collections.emptyMap());
 	}
 
 	@Test

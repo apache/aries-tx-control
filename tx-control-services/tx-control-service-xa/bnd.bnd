@@ -63,4 +63,5 @@ Import-Package: !javax.resource.*, \
                 org.osgi.service.transaction.control, \
                 *
     
-Provide-Capability: osgi.service;objectClass="org.osgi.service.transaction.control.TransactionControl";osgi.local.enabled="true";osgi.xa.enabled="true";uses:="org.osgi.service.transaction.control"
+Provide-Capability: osgi.service;objectClass="org.osgi.service.transaction.control.TransactionControl";osgi.local.enabled="true";osgi.xa.enabled="true";osgi.recovery.enabled="true";uses:="org.osgi.service.transaction.control"
+
