@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -48,6 +49,7 @@ import javax.transaction.xa.Xid;
 
 import org.apache.aries.tx.control.service.common.impl.AbstractTransactionContextImpl;
 import org.apache.geronimo.transaction.manager.RecoveryWorkAroundTransactionManager;
+import org.apache.geronimo.transaction.manager.SetRollbackOnlyException;
 import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.TransactionContext;
 import org.osgi.service.transaction.control.TransactionException;
@@ -132,7 +134,6 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 				throw new IllegalStateException("The transaction is already being committed");
 			case COMMITTED:
 				throw new IllegalStateException("The transaction is already committed");
-	
 			case ROLLING_BACK:
 			case ROLLED_BACK:
 				// A no op
@@ -307,7 +308,14 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 					listener.beforeCompletion();
 					transactionManager.rollback();
 				} else {
-					transactionManager.commit();
+					try {
+						transactionManager.commit();
+					} catch (RollbackException re) {
+						if (re.getCause() instanceof SetRollbackOnlyException) {
+							// This means that a pre-completion callback called setRollbackOnly
+							// which can be safely ignored (i.e. it's not really an exception)
+						}
+					}
 				}
 			} catch (Exception e) {
 				recordFailure(e);

@@ -83,6 +83,7 @@ public class TransactionContextTest {
 	public void testSetRollbackOnly() {
 		ctx.setRollbackOnly();
 		assertTrue(ctx.getRollbackOnly());
+		assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
 	}
 	
 	@Test
@@ -183,12 +184,35 @@ public class TransactionContextTest {
 		
 		assertEquals(0, value.getAndSet(1));
 		
-		
 		ctx.setRollbackOnly();
+		
+		assertTrue(ctx.getRollbackOnly());
+		assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
 		
 		ctx.finish();
 
 		assertEquals(5, value.get());
+	}
+
+	@Test
+	public void testPreCompletionCallsSetRollbackOnly() throws Exception {
+		
+		ctx.registerXAResource(xaResource, null);
+		
+		AtomicInteger value = new AtomicInteger(0);
+		
+		ctx.preCompletion(() -> {
+			ctx.setRollbackOnly();
+			assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
+			value.compareAndSet(1, 5);
+		});
+		
+		assertEquals(0, value.getAndSet(1));
+		
+		ctx.finish();
+		
+		assertEquals(5, value.get());
+		assertEquals(ROLLED_BACK, ctx.getTransactionStatus());
 	}
 
 	@Test
@@ -221,6 +245,9 @@ public class TransactionContextTest {
 		assertEquals(0, value.getAndSet(1));
 		
 		ctx.setRollbackOnly();
+		
+		assertTrue(ctx.getRollbackOnly());
+		assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
 		
 		ctx.finish();
 		
@@ -299,6 +326,9 @@ public class TransactionContextTest {
 	public void testLocalResourceRollbackOnly() throws Exception {
 		ctx.registerLocalResource(localResource);
 		ctx.setRollbackOnly();
+		
+		assertTrue(ctx.getRollbackOnly());
+		assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
 		
 		Mockito.doAnswer(i -> {
 			assertEquals(ROLLING_BACK, ctx.getTransactionStatus());
@@ -423,6 +453,9 @@ public class TransactionContextTest {
 	public void testXAResourceRollbackOnly() throws Exception {
 		ctx.registerXAResource(xaResource, null);
 		ctx.setRollbackOnly();
+		
+		assertTrue(ctx.getRollbackOnly());
+		assertEquals(MARKED_ROLLBACK, ctx.getTransactionStatus());
 		
 		Mockito.doAnswer(i -> {
 			assertEquals(ROLLING_BACK, ctx.getTransactionStatus());
