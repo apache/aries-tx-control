@@ -93,16 +93,26 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 		boolean xaEnabled = toBoolean(resourceProviderProperties, XA_ENLISTMENT_ENABLED, true);
 		boolean localEnabled = toBoolean(resourceProviderProperties, LOCAL_ENLISTMENT_ENABLED, true);
 		
-		try {
-			checkEnlistment(xaEnabled, localEnabled, ds.isWrapperFor(XADataSource.class));
-			DataSource toUse = poolIfNecessary(resourceProviderProperties, xaEnabled ?
-					new XADataSourceMapper(ds.unwrap(XADataSource.class)) : ds);
-	
-			return new JDBCConnectionProviderImpl(toUse, xaEnabled, localEnabled, 
-					getRecoveryId(resourceProviderProperties, xaEnabled));
-		} catch (SQLException sqle) {
-			throw new TransactionException("Unable to create the JDBC resource provider", sqle);
+		XADataSource xaDS;
+		if(ds instanceof XADataSource) {
+			xaDS = (XADataSource) ds;
+		} else {
+			try {
+				if(ds.isWrapperFor(XADataSource.class)) {
+					xaDS = ds.unwrap(XADataSource.class);
+				} else {
+					xaDS = null;
+				}
+			} catch (SQLException sqle) {
+				xaDS = null;
+			}
 		}
+		checkEnlistment(xaEnabled, localEnabled, xaDS != null);
+		DataSource toUse = poolIfNecessary(resourceProviderProperties, xaEnabled ?
+				new XADataSourceMapper(xaDS) : ds);
+
+		return new JDBCConnectionProviderImpl(toUse, xaEnabled, localEnabled, 
+				getRecoveryId(resourceProviderProperties, xaEnabled));
 	}
 
 	@Override
