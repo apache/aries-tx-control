@@ -53,6 +53,7 @@ import org.apache.geronimo.transaction.manager.SetRollbackOnlyException;
 import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.TransactionContext;
 import org.osgi.service.transaction.control.TransactionException;
+import org.osgi.service.transaction.control.TransactionRolledBackException;
 import org.osgi.service.transaction.control.TransactionStatus;
 
 public class TransactionContextImpl extends AbstractTransactionContextImpl implements TransactionContext {
@@ -315,6 +316,9 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 							// This means that a pre-completion callback called setRollbackOnly
 							// which can be safely ignored (i.e. it's not really an exception)
 						}
+						TransactionRolledBackException tre = 
+								new TransactionRolledBackException(re.getMessage(), re);
+						throw tre;
 					}
 				}
 			} catch (Exception e) {
