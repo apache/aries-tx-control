@@ -43,12 +43,13 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 	@Override
 	public AbstractJPAEntityManagerProvider getProviderFor(EntityManagerFactoryBuilder emfb, Map<String, Object> jpaProperties,
 			Map<String, Object> resourceProviderProperties) {
+		Map<String, Object> jpaPropsToUse = jpaProperties == null ? new HashMap<>() : new HashMap<>(jpaProperties);
 		checkEnlistment(resourceProviderProperties);
 		
-		Object found = jpaProperties.get("javax.persistence.dataSource");
+		Object found = jpaPropsToUse.get("javax.persistence.dataSource");
 		
 		if(found == null) {
-			found = jpaProperties.get("javax.persistence.nonJtaDataSource");
+			found = jpaPropsToUse.get("javax.persistence.nonJtaDataSource");
 		}
 		
 		if(found == null) {
@@ -62,7 +63,6 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			throw new IllegalArgumentException("The object found when checking the javax.persistence.dataSource and javax.persistence.nonJtaDataSource properties was not a DataSource.");
 		}
 		
-		Map<String, Object> jpaPropsToUse = new HashMap<>(jpaProperties);
 		DataSource toUse = JPADataSourceHelper.poolIfNecessary(resourceProviderProperties, unpooled);
 		jpaPropsToUse.put("javax.persistence.dataSource", toUse);
 		jpaPropsToUse.put("javax.persistence.nonJtaDataSource", toUse);
