@@ -38,7 +38,10 @@ public class JPADataSourceHelper {
 			hcfg.setIdleTimeout(toLong(resourceProviderProperties, IDLE_TIMEOUT, TimeUnit.MINUTES.toMillis(3)));
 			hcfg.setMaxLifetime(toLong(resourceProviderProperties, CONNECTION_LIFETIME, HOURS.toMillis(3)));
 	
-			hcfg.setConnectionTestQuery((String)resourceProviderProperties.get(CONNECTION_TEST_QUERY));
+			ofNullable(resourceProviderProperties)
+				.map(m -> m.get(CONNECTION_TEST_QUERY))
+				.map(String::valueOf)
+				.ifPresent(q -> hcfg.setConnectionTestQuery(q));
 			
 			toUse = new HikariDataSource(hcfg);
 

@@ -19,7 +19,8 @@
 package org.apache.aries.tx.control.jpa.common.impl;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TransactionRequiredException;
+
+import org.osgi.service.transaction.control.TransactionException;
 
 public class ScopedEntityManagerWrapper extends EntityManagerWrapper {
 
@@ -41,7 +42,7 @@ public class ScopedEntityManagerWrapper extends EntityManagerWrapper {
 
 	@Override
 	public void joinTransaction() {
-		throw new TransactionRequiredException("This EntityManager is being used in the No Transaction scope. There is no transaction to join.");
+		throw new TransactionException("This EntityManager is being used in the No Transaction scope. There is no transaction to join.");
 	}
 
 	@Override

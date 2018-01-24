@@ -84,11 +84,12 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 	public AbstractJPAEntityManagerProvider getProviderFor(EntityManagerFactoryBuilder emfb, Map<String, Object> jpaProperties,
 			Map<String, Object> resourceProviderProperties) {
 		
-		Map<String, Object> jpaPropsToUse = new HashMap<>(jpaProperties);
+		Map<String, Object> jpaPropsToUse = jpaProperties == null ? new HashMap<>() :
+			new HashMap<>(jpaProperties);
 		jpaPropsToUse.put(TRANSACTION_TYPE, JTA.name());
 		
 		Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> create;
-		if(jpaProperties.containsKey("osgi.jdbc.provider")) {
+		if(jpaPropsToUse.containsKey("osgi.jdbc.provider")) {
 			create = handleJDBCResourceProvider(emfb, resourceProviderProperties, jpaPropsToUse);			
 		} else if(toBoolean(jpaPropsToUse, PRE_ENLISTED_DB_CONNECTION, false)) {
 			create = handlePreEnlistedConnection(emfb, resourceProviderProperties, jpaPropsToUse);
