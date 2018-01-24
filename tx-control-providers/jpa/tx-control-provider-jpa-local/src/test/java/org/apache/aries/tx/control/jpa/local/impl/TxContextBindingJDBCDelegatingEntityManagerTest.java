@@ -21,12 +21,15 @@ package org.apache.aries.tx.control.jpa.local.impl;
 
 import static org.mockito.Mockito.times;
 import static org.osgi.service.transaction.control.TransactionStatus.ACTIVE;
+import static org.osgi.service.transaction.control.TransactionStatus.COMMITTED;
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
+import static org.osgi.service.transaction.control.TransactionStatus.ROLLED_BACK;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -40,13 +43,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.osgi.service.transaction.control.LocalResource;
 import org.osgi.service.transaction.control.TransactionContext;
 import org.osgi.service.transaction.control.TransactionControl;
 import org.osgi.service.transaction.control.TransactionException;
+import org.osgi.service.transaction.control.TransactionStatus;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TxContextBindingEntityManagerTest {
+public class TxContextBindingJDBCDelegatingEntityManagerTest {
 
 	@Mock
 	TransactionControl control;
@@ -69,7 +72,7 @@ public class TxContextBindingEntityManagerTest {
 	
 	AbstractJPAEntityManagerProvider provider;
 	
-	TxContextBindingEntityManager em;
+	TxContextBindingJDBCDelegatingEntityManager em;
 	
 	@Before
 	public void setUp() throws SQLException {
@@ -82,9 +85,9 @@ public class TxContextBindingEntityManagerTest {
 		Mockito.when(context.getScopedValue(Mockito.any()))
 			.thenAnswer(i -> variables.get(i.getArguments()[0]));
 		
-		provider = new JPAEntityManagerProviderImpl(emf, false, null);
+		provider = new JPAEntityManagerProviderImpl(emf, true, null);
 		
-		em = new TxContextBindingEntityManager(control, provider, id);
+		em = new TxContextBindingJDBCDelegatingEntityManager(control, provider, id);
 	}
 	
 	private void setupNoTransaction() {
@@ -118,6 +121,7 @@ public class TxContextBindingEntityManagerTest {
 		Mockito.verify(context).postCompletion(Mockito.any());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testActiveTransactionCommit() throws SQLException {
 		setupActiveTransaction();
@@ -125,22 +129,28 @@ public class TxContextBindingEntityManagerTest {
 		em.isOpen();
 		em.isOpen();
 		
-		ArgumentCaptor<LocalResource> captor = ArgumentCaptor.forClass(LocalResource.class);
-
+		ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+		@SuppressWarnings("rawtypes")
+		ArgumentCaptor captor2 = ArgumentCaptor.forClass(Consumer.class);
+		
 		Mockito.verify(rawEm, times(2)).isOpen();
 		Mockito.verify(et).begin();
 		Mockito.verify(et, times(0)).commit();
 		Mockito.verify(et, times(0)).rollback();
-		Mockito.verify(context).registerLocalResource(captor.capture());
+		Mockito.verify(context).preCompletion(captor.capture());
 		
-		Mockito.verify(context).postCompletion(Mockito.any());
+		Mockito.verify(context).postCompletion((Consumer<TransactionStatus>) captor2.capture());
 		
-		captor.getValue().commit();
+		captor.getValue().run();
+		Mockito.verify(rawEm).flush();
+		
+		((Consumer<TransactionStatus>)captor2.getValue()).accept(COMMITTED);
 		
 		Mockito.verify(et).commit();
 		Mockito.verify(et, times(0)).rollback();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testActiveTransactionRollback() throws SQLException {
 		setupActiveTransaction();
@@ -148,28 +158,25 @@ public class TxContextBindingEntityManagerTest {
 		em.isOpen();
 		em.isOpen();
 		
-		ArgumentCaptor<LocalResource> captor = ArgumentCaptor.forClass(LocalResource.class);
+		ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
+		@SuppressWarnings("rawtypes")
+		ArgumentCaptor captor2 = ArgumentCaptor.forClass(Consumer.class);
 		
 		Mockito.verify(rawEm, times(2)).isOpen();
 		Mockito.verify(et).begin();
 		Mockito.verify(et, times(0)).commit();
 		Mockito.verify(et, times(0)).rollback();
-		Mockito.verify(context).registerLocalResource(captor.capture());
+		Mockito.verify(context).preCompletion(captor.capture());
 		
-		Mockito.verify(context).postCompletion(Mockito.any());
+		Mockito.verify(context).postCompletion((Consumer<TransactionStatus>) captor2.capture());
 		
-		captor.getValue().rollback();
+		captor.getValue().run();
+		Mockito.verify(rawEm).flush();
+		
+		((Consumer<TransactionStatus>)captor2.getValue()).accept(ROLLED_BACK);
 		
 		Mockito.verify(et).rollback();
 		Mockito.verify(et, times(0)).commit();
-	}
-
-	@Test(expected=TransactionException.class)
-	public void testActiveTransactionNoLocal() throws SQLException {
-		setupActiveTransaction();
-		
-		Mockito.when(context.supportsLocal()).thenReturn(false);
-		em.isOpen();
 	}
 
 	@Test(expected=TransactionException.class)

@@ -30,13 +30,19 @@ import org.osgi.service.transaction.control.TransactionException;
 public class JPAEntityManagerProviderImpl extends AbstractJPAEntityManagerProvider {
 
 	private final UUID					uuid	= UUID.randomUUID();
+	
+	private final boolean				delegateEnlistment;
 
-	public JPAEntityManagerProviderImpl(EntityManagerFactory emf, Runnable onClose) {
+	public JPAEntityManagerProviderImpl(EntityManagerFactory emf, 
+			boolean delegateEnlistment, Runnable onClose) {
 		super(emf, onClose);
+		this.delegateEnlistment = delegateEnlistment;
 	}
 
 	@Override
 	public EntityManager getResource(TransactionControl txControl) throws TransactionException {
-		return new TxContextBindingEntityManager(txControl, this, uuid);
+		return delegateEnlistment ? 
+				new TxContextBindingJDBCDelegatingEntityManager(txControl, this, uuid) :
+				new TxContextBindingEntityManager(txControl, this, uuid);
 	}
 }

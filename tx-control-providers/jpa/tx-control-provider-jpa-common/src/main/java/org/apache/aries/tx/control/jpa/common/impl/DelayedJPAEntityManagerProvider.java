@@ -16,13 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.aries.tx.control.jpa.xa.impl;
+package org.apache.aries.tx.control.jpa.common.impl;
 
 import java.util.function.Function;
 
 import javax.persistence.EntityManager;
 
-import org.apache.aries.tx.control.jpa.common.impl.AbstractJPAEntityManagerProvider;
 import org.osgi.service.transaction.control.TransactionControl;
 import org.osgi.service.transaction.control.TransactionException;
 

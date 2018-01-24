@@ -21,20 +21,26 @@ package org.apache.aries.tx.control.jpa.local.impl;
 import static java.util.Optional.ofNullable;
 import static javax.persistence.spi.PersistenceUnitTransactionType.RESOURCE_LOCAL;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.LOCAL_ENLISTMENT_ENABLED;
+import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.TRANSACTIONAL_DB_CONNECTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.XA_ENLISTMENT_ENABLED;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
 import org.apache.aries.tx.control.jpa.common.impl.AbstractJPAEntityManagerProvider;
+import org.apache.aries.tx.control.jpa.common.impl.DelayedJPAEntityManagerProvider;
 import org.apache.aries.tx.control.jpa.common.impl.InternalJPAEntityManagerProviderFactory;
 import org.apache.aries.tx.control.jpa.common.impl.JPADataSourceHelper;
+import org.apache.aries.tx.control.jpa.common.impl.ScopedConnectionDataSource;
 import org.osgi.service.jpa.EntityManagerFactoryBuilder;
+import org.osgi.service.transaction.control.TransactionControl;
 import org.osgi.service.transaction.control.TransactionException;
+import org.osgi.service.transaction.control.jdbc.JDBCConnectionProvider;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -44,7 +50,12 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 	public AbstractJPAEntityManagerProvider getProviderFor(EntityManagerFactoryBuilder emfb, Map<String, Object> jpaProperties,
 			Map<String, Object> resourceProviderProperties) {
 		Map<String, Object> jpaPropsToUse = jpaProperties == null ? new HashMap<>() : new HashMap<>(jpaProperties);
-		checkEnlistment(resourceProviderProperties);
+		Map<String, Object> resourceProviderPropertiesToUse = resourceProviderProperties == null ? new HashMap<>() : new HashMap<>(resourceProviderProperties);
+		checkEnlistment(resourceProviderPropertiesToUse);
+		
+		if(resourceProviderPropertiesToUse.containsKey(TRANSACTIONAL_DB_CONNECTION)) {
+			return delegateTransactionality(emfb, jpaPropsToUse, resourceProviderPropertiesToUse);
+		}
 		
 		Object found = jpaPropsToUse.get("javax.persistence.dataSource");
 		
@@ -63,7 +74,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			throw new IllegalArgumentException("The object found when checking the javax.persistence.dataSource and javax.persistence.nonJtaDataSource properties was not a DataSource.");
 		}
 		
-		DataSource toUse = JPADataSourceHelper.poolIfNecessary(resourceProviderProperties, unpooled);
+		DataSource toUse = JPADataSourceHelper.poolIfNecessary(resourceProviderPropertiesToUse, unpooled);
 		jpaPropsToUse.put("javax.persistence.dataSource", toUse);
 		jpaPropsToUse.put("javax.persistence.nonJtaDataSource", toUse);
 		
@@ -71,12 +82,33 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		
 		validateEMF(emf);
 		
-		return new JPAEntityManagerProviderImpl(emf, () -> {
+		return new JPAEntityManagerProviderImpl(emf, false, () -> {
 				emf.close();
 				if (toUse instanceof HikariDataSource) {
 					((HikariDataSource)toUse).close();
 				}
 			});
+	}
+
+	private AbstractJPAEntityManagerProvider delegateTransactionality(EntityManagerFactoryBuilder emfb, Map<String, Object> jpaPropsToUse, Map<String, Object> resourceProviderProperties) {
+		Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> create;
+		JDBCConnectionProvider provider = (JDBCConnectionProvider) resourceProviderProperties.get(TRANSACTIONAL_DB_CONNECTION);
+		
+		create = tx -> {
+				DataSource ds = new ScopedConnectionDataSource(
+						new ScopedConnectionIsolator(provider.getResource(tx.get())));
+				jpaPropsToUse.put("javax.persistence.dataSource", ds);
+				jpaPropsToUse.put("javax.persistence.nonJtaDataSource", ds);
+				
+				EntityManagerFactory emf = emfb.createEntityManagerFactory(jpaPropsToUse);
+				
+				validateEMF(emf);
+				
+				return new JPAEntityManagerProviderImpl(emf, true, () -> {
+						emf.close();
+					});
+			};
+		return new DelayedJPAEntityManagerProvider(create);
 	}
 
 	public AbstractJPAEntityManagerProvider getProviderFor(EntityManagerFactoryBuilder emfb, 
@@ -88,7 +120,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		
 		validateEMF(emf);
 		
-		return new JPAEntityManagerProviderImpl(emf, () -> {
+		return new JPAEntityManagerProviderImpl(emf, false, () -> {
 			try {
 				emf.close();
 			} catch (Exception e) {
@@ -123,7 +155,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		checkEnlistment(resourceProviderProperties);
 		validateEMF(emf);
 		
-		return new JPAEntityManagerProviderImpl(emf, null);
+		return new JPAEntityManagerProviderImpl(emf, false, null);
 	}
 
 	private void checkEnlistment(Map<String, Object> resourceProviderProperties) {

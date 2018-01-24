@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.aries.tx.control.jpa.common.impl.AbstractJPAEntityManagerProvider;
 import org.apache.aries.tx.control.jpa.common.impl.AbstractManagedJPAEMFLocator;
+import org.apache.aries.tx.control.jpa.common.impl.DelayedJPAEntityManagerProvider;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;

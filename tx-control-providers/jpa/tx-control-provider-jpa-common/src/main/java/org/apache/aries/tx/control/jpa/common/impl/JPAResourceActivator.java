@@ -20,14 +20,10 @@ package org.apache.aries.tx.control.jpa.common.impl;
 
 import org.apache.aries.tx.control.resource.common.impl.ResourceActivator;
 import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class JPAResourceActivator extends
 	ResourceActivator<AbstractJPAEntityManagerProvider, ResourceTrackingJPAEntityManagerProviderFactory>{
 
-	private static final Logger LOG = LoggerFactory.getLogger(JPAResourceActivator.class);
-	
 	@Override
 	protected Class<JPAEntityManagerProviderFactory> getAdvertisedInterface() {
 		return JPAEntityManagerProviderFactory.class;
