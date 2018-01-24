@@ -25,6 +25,7 @@ import static org.apache.aries.tx.control.jpa.xa.impl.XAJPADataSourceSetup.NON_J
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.LOCAL_ENLISTMENT_ENABLED;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.PRE_ENLISTED_DB_CONNECTION;
+import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.TRANSACTIONAL_DB_CONNECTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.XA_ENLISTMENT_ENABLED;
 
 import java.io.ByteArrayOutputStream;
@@ -88,13 +89,16 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			new HashMap<>(jpaProperties);
 		jpaPropsToUse.put(TRANSACTION_TYPE, JTA.name());
 		
+		Map<String, Object> resourceProviderPropsToUse = resourceProviderProperties == null ? new HashMap<>() :
+			new HashMap<>(resourceProviderProperties);
+		
 		Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> create;
-		if(jpaPropsToUse.containsKey("osgi.jdbc.provider")) {
-			create = handleJDBCResourceProvider(emfb, resourceProviderProperties, jpaPropsToUse);			
+		if(resourceProviderPropsToUse.containsKey(TRANSACTIONAL_DB_CONNECTION)) {
+			create = handleJDBCResourceProvider(emfb, resourceProviderPropsToUse, jpaPropsToUse);			
 		} else if(toBoolean(jpaPropsToUse, PRE_ENLISTED_DB_CONNECTION, false)) {
-			create = handlePreEnlistedConnection(emfb, resourceProviderProperties, jpaPropsToUse);
+			create = handlePreEnlistedConnection(emfb, resourceProviderPropsToUse, jpaPropsToUse);
 		} else {
-			create = handleNormalDataSource(emfb, resourceProviderProperties, jpaPropsToUse);
+			create = handleNormalDataSource(emfb, resourceProviderPropsToUse, jpaPropsToUse);
 		}
 			
 		return new DelayedJPAEntityManagerProvider(create);
@@ -104,12 +108,12 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			EntityManagerFactoryBuilder emfb, Map<String, Object> resourceProviderProperties,
 			Map<String, Object> jpaPropsToUse) {
 		Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> create;
-		JDBCConnectionProvider provider = (JDBCConnectionProvider) jpaPropsToUse.get("osgi.jdbc.provider");
+		JDBCConnectionProvider provider = (JDBCConnectionProvider) resourceProviderProperties.get(TRANSACTIONAL_DB_CONNECTION);
 		
 		create = tx -> {
 				jpaPropsToUse.put(JTA_DATA_SOURCE, 
 					new ScopedConnectionDataSource(provider.getResource(tx.get())));
-				jpaPropsToUse.put(PRE_ENLISTED_DB_CONNECTION, Boolean.TRUE);
+				resourceProviderProperties.put(PRE_ENLISTED_DB_CONNECTION, Boolean.TRUE);
 				
 				return getProviderFor(emfb, jpaPropsToUse, resourceProviderProperties, tx, null); 
 			};
