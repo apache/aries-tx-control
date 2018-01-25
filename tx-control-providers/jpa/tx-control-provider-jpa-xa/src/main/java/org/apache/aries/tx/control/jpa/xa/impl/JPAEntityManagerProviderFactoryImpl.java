@@ -24,6 +24,7 @@ import static org.apache.aries.tx.control.jpa.xa.impl.XAJPADataSourceSetup.JTA_D
 import static org.apache.aries.tx.control.jpa.xa.impl.XAJPADataSourceSetup.NON_JTA_DATA_SOURCE;
 import static org.osgi.service.transaction.control.TransactionStatus.NO_TRANSACTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.LOCAL_ENLISTMENT_ENABLED;
+import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.OSGI_RECOVERY_IDENTIFIER;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.PRE_ENLISTED_DB_CONNECTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.TRANSACTIONAL_DB_CONNECTION;
 import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.XA_ENLISTMENT_ENABLED;
@@ -112,6 +113,11 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> create;
 		JDBCConnectionProvider provider = (JDBCConnectionProvider) resourceProviderProperties.get(TRANSACTIONAL_DB_CONNECTION);
 		
+		if(resourceProviderProperties.containsKey(OSGI_RECOVERY_IDENTIFIER)) {
+			LOGGER.warn("Unable to set a recovery identifier {}. This should be set when creating the JDBC Resource Provider", 
+					resourceProviderProperties.remove(OSGI_RECOVERY_IDENTIFIER));
+		}
+		
 		create = tx -> {
 				jpaPropsToUse.put(JTA_DATA_SOURCE, 
 					new ScopedConnectionDataSource(provider.getResource(tx.get())));
@@ -131,6 +137,12 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			LOGGER.error("No datasource supplied in the configuration");
 			throw new IllegalArgumentException("No pre-enlisted datasource could be found to create the EntityManagerFactory. Please provide either a javax.persistence.jtaDataSource");
 		}
+		
+		if(resourceProviderProperties.containsKey(OSGI_RECOVERY_IDENTIFIER)) {
+			LOGGER.warn("Unable to set a recovery identifier {} for a pre-enlisted connection", 
+					resourceProviderProperties.remove(OSGI_RECOVERY_IDENTIFIER));
+		}
+		
 		create = tx -> {
 			DataSource toUse = JPADataSourceHelper.poolIfNecessary(resourceProviderProperties, (DataSource) supplied);
 			jpaPropsToUse.put(JTA_DATA_SOURCE, toUse);
@@ -200,14 +212,14 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		Map<String, Object> resourceProviderProperties, ThreadLocal<TransactionControl> localStore, Runnable onClose) {
 		Map<String, Object> toUse;
 		if(checkEnlistment(resourceProviderProperties)) {
-			toUse = enlistDataSource(localStore, jpaProperties);
+			toUse = enlistDataSource(localStore, jpaProperties, resourceProviderProperties);
 		} else {
 			toUse = jpaProperties;
 		}
 		
 		setupTransactionManager(context, toUse, localStore, emfb);
 		
-		return localStore.get().notSupported(() -> internalBuilderCreate(emfb, toUse, localStore, onClose));
+		return localStore.get().notSupported(() -> internalBuilderCreate(emfb, toUse, resourceProviderProperties, localStore, onClose));
 	}
 
 	private boolean checkEnlistment(Map<String, Object> resourceProviderProperties) {
@@ -221,11 +233,12 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		return !toBoolean(resourceProviderProperties, PRE_ENLISTED_DB_CONNECTION, false);
 	}
 
-	private Map<String, Object> enlistDataSource(ThreadLocal<TransactionControl> tx, Map<String, Object> jpaProperties) {
+	private Map<String, Object> enlistDataSource(ThreadLocal<TransactionControl> tx, Map<String, Object> jpaProperties, Map<String, Object> resourceProviderProperties) {
 		Map<String, Object> toReturn = new HashMap<>(jpaProperties);
 		
 		DataSource enlistedDS = new EnlistingDataSource(tx, 
-				(DataSource)jpaProperties.get(JTA_DATA_SOURCE));
+				(DataSource)jpaProperties.get(JTA_DATA_SOURCE),
+				(String) resourceProviderProperties.get(OSGI_RECOVERY_IDENTIFIER));
 		
 		toReturn.put(JTA_DATA_SOURCE, enlistedDS);
 		
@@ -356,7 +369,8 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 	}
 
 	private AbstractJPAEntityManagerProvider internalBuilderCreate(EntityManagerFactoryBuilder emfb,
-			Map<String, Object> jpaProperties, ThreadLocal<TransactionControl> tx, Runnable onClose) {
+			Map<String, Object> jpaProperties, Map<String, Object> providerProperties, 
+			ThreadLocal<TransactionControl> tx, Runnable onClose) {
 		EntityManagerFactory emf = emfb.createEntityManagerFactory(jpaProperties);
 		
 		validateEMF(emf);
@@ -369,7 +383,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			if (onClose != null) {
 				onClose.run();
 			}
-		});
+		}, context, jpaProperties, providerProperties);
 	}
 
 	private void validateEMF(EntityManagerFactory emf) {
@@ -396,7 +410,13 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 		checkEnlistment(resourceProviderProperties);
 		validateEMF(emf);
 		
-		return new JPAEntityManagerProviderImpl(emf, new ThreadLocal<>(), null);
+		if(resourceProviderProperties.containsKey(OSGI_RECOVERY_IDENTIFIER)) {
+			LOGGER.warn("Unable to set a recovery identifier {} for an existing EntityManagerFactory", 
+					resourceProviderProperties.remove(OSGI_RECOVERY_IDENTIFIER));
+		}
+		
+		return new JPAEntityManagerProviderImpl(emf, new ThreadLocal<>(), null, null,
+				null, null);
 	}
 
 	public static boolean toBoolean(Map<String, Object> props, String key, boolean defaultValue) {
@@ -460,14 +480,18 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 	public static class EnlistingDataSource implements DataSource {
 		
 		private final DataSource delegate;
+		
+		private final String recoveryIdentifier;
 
 		private final UUID resourceId = UUID.randomUUID();
 		
 		private final ThreadLocal<TransactionControl> txControlToUse;
 		
-		public EnlistingDataSource(ThreadLocal<TransactionControl> txControlToUse, DataSource delegate) {
+		public EnlistingDataSource(ThreadLocal<TransactionControl> txControlToUse, 
+				DataSource delegate, String recoveryIdentifier) {
 			this.txControlToUse = txControlToUse;
 			this.delegate = delegate;
+			this.recoveryIdentifier = recoveryIdentifier;
 		}
 		
 		public TransactionControl getTxControl() {
@@ -496,6 +520,23 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 
 		public Connection getConnection() throws SQLException {
 			return enlistedConnection(() -> delegate.getConnection());
+		}
+
+		/**
+		 * Used by the {@link RecoverableXAResourceImpl}
+		 * @return
+		 * @throws SQLException
+		 */
+		Connection getRawConnection() throws SQLException {
+			return delegate.getConnection();
+		}
+		/**
+		 * Used by the {@link RecoverableXAResourceImpl}
+		 * @return
+		 * @throws SQLException
+		 */
+		Connection getRawConnection(String username, String password) throws SQLException {
+			return delegate.getConnection(username, password);
 		}
 
 		public void setLoginTimeout(int seconds) throws SQLException {
@@ -537,7 +578,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 					toReturn = new ScopedConnectionWrapper(toClose);
 				} else if (txContext.supportsXA()) {
 					toReturn = new TxConnectionWrapper(toClose);
-					txContext.registerXAResource(getXAResource(toClose), null);
+					txContext.registerXAResource(getXAResource(toClose), recoveryIdentifier);
 				} else {
 					throw new TransactionException(
 							"There is a transaction active, but it does not support XA participants");
@@ -562,7 +603,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			return toReturn;
 		}
 		
-		private XAResource getXAResource(Connection conn) throws SQLException {
+		public static XAResource getXAResource(Connection conn) throws SQLException {
 			if(conn instanceof XAConnectionWrapper) {
 				return ((XAConnectionWrapper)conn).getXaResource();
 			} else if(conn.isWrapperFor(XAConnectionWrapper.class)){

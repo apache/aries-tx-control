@@ -88,7 +88,7 @@ public class XATxContextBindingEntityManagerTest {
 		Mockito.when(context.getScopedValue(Mockito.any()))
 			.thenAnswer(i -> variables.get(i.getArguments()[0]));
 		
-		provider = new JPAEntityManagerProviderImpl(emf, commonTxControl, null);
+		provider = new JPAEntityManagerProviderImpl(emf, commonTxControl, null, null, null, null);
 		
 		em = new XATxContextBindingEntityManager(control, provider, id, commonTxControl);
 	}

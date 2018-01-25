@@ -82,7 +82,7 @@ public class XATxContextBindingEntityManager extends EntityManagerWrapper {
 				toClose.joinTransaction();
 			} else {
 				throw new TransactionException(
-						"There is a transaction active, but it does not support local participants");
+						"There is a transaction active, but it does not support xa participants");
 			}
 		} catch (Exception sqle) {
 			commonTxStore.set(previous);

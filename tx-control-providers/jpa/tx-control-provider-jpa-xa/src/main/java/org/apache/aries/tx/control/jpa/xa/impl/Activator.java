@@ -18,6 +18,8 @@
  */
 package org.apache.aries.tx.control.jpa.xa.impl;
 
+import static org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory.XA_ENLISTMENT_ENABLED;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -49,7 +51,8 @@ public class Activator extends JPAResourceActivator {
 	@Override
 	protected Dictionary<String, Object> getServiceProperties() {
 		Dictionary<String, Object> props = new Hashtable<>();
-		props.put("osgi.xa.enabled", Boolean.TRUE);
+		props.put(XA_ENLISTMENT_ENABLED, Boolean.TRUE);
+		props.put("osgi.recovery.enabled", Boolean.TRUE);
 		return props;
 	}
 
