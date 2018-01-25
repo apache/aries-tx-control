@@ -18,6 +18,9 @@
  */
 package org.apache.aries.tx.control.jdbc.xa.impl;
 
+import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFactory.LOCAL_ENLISTMENT_ENABLED;
+import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFactory.XA_ENLISTMENT_ENABLED;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -40,7 +43,7 @@ public class Activator extends ResourceActivator<AbstractJDBCConnectionProvider,
 			@Override
 			protected TrackingResourceProviderFactory<AbstractJDBCConnectionProvider> getTrackingResourceManagerProviderFactory() {
 				return new ResourceTrackingJDBCConnectionProviderFactory(
-						new JDBCConnectionProviderFactoryImpl());
+						new JDBCConnectionProviderFactoryImpl(context));
 			}
 		};
 	}
@@ -53,8 +56,9 @@ public class Activator extends ResourceActivator<AbstractJDBCConnectionProvider,
 	@Override
 	protected Dictionary<String, Object> getServiceProperties() {
 		Dictionary<String, Object> props = new Hashtable<>();
-		props.put("osgi.local.enabled", Boolean.TRUE);
-		props.put("osgi.xa.enabled", Boolean.TRUE);
+		props.put(LOCAL_ENLISTMENT_ENABLED, Boolean.TRUE);
+		props.put(XA_ENLISTMENT_ENABLED, Boolean.TRUE);
+		props.put("osgi.recovery.enabled", Boolean.TRUE);
 		return props;
 	}
 

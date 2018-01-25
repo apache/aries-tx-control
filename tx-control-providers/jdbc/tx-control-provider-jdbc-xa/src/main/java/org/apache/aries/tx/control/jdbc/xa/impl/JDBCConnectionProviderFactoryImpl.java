@@ -37,6 +37,7 @@ import org.apache.aries.tx.control.jdbc.common.impl.AbstractInternalJDBCConnecti
 import org.apache.aries.tx.control.jdbc.common.impl.AbstractJDBCConnectionProvider;
 import org.apache.aries.tx.control.jdbc.common.impl.DriverDataSource;
 import org.apache.aries.tx.control.jdbc.xa.connection.impl.XADataSourceMapper;
+import org.osgi.framework.BundleContext;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.service.transaction.control.TransactionException;
 import org.slf4j.Logger;
@@ -46,6 +47,12 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 
 	private static final Logger LOG = LoggerFactory.getLogger(ManagedServiceFactoryImpl.class);
 	
+	private final BundleContext context;
+	
+	public JDBCConnectionProviderFactoryImpl(BundleContext context) {
+		this.context = context;
+	}
+
 	@Override
 	public JDBCConnectionProviderImpl getProviderFor(DataSourceFactory dsf, Properties jdbcProperties,
 			Map<String, Object> resourceProviderProperties) {
@@ -73,7 +80,8 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 		DataSource toUse = poolIfNecessary(resourceProviderProperties, unpooled);
 		
 		return new JDBCConnectionProviderImpl(toUse, xaEnabled, localEnabled, 
-				getRecoveryId(resourceProviderProperties, xaEnabled));
+				getRecoveryId(resourceProviderProperties, xaEnabled), context,
+				resourceProviderProperties);
 	}
 
 	private String getRecoveryId(Map<String, Object> resourceProviderProps, boolean xaEnabled) {
@@ -112,7 +120,8 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 				new XADataSourceMapper(xaDS) : ds);
 
 		return new JDBCConnectionProviderImpl(toUse, xaEnabled, localEnabled, 
-				getRecoveryId(resourceProviderProperties, xaEnabled));
+				getRecoveryId(resourceProviderProperties, xaEnabled), context,
+				resourceProviderProperties);
 	}
 
 	@Override
@@ -128,7 +137,8 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 				new DriverDataSource(driver, jdbcProperties.getProperty(JDBC_URL), jdbcProperties));
 		
 		return new JDBCConnectionProviderImpl(toUse, xaEnabled, localEnabled, 
-				getRecoveryId(resourceProviderProperties, xaEnabled));
+				getRecoveryId(resourceProviderProperties, xaEnabled), context,
+				resourceProviderProperties);
 	}
 
 	@Override
@@ -142,7 +152,8 @@ public class JDBCConnectionProviderFactoryImpl extends AbstractInternalJDBCConne
 		DataSource unpooled = new XADataSourceMapper(ds);
 		
 		return new JDBCConnectionProviderImpl(poolIfNecessary(resourceProviderProperties, unpooled),
-				xaEnabled, localEnabled, getRecoveryId(resourceProviderProperties, xaEnabled));
+				xaEnabled, localEnabled, getRecoveryId(resourceProviderProperties, xaEnabled), context,
+				resourceProviderProperties);
 	}
 
 	private void checkEnlistment(boolean xaEnabled, boolean localEnabled, boolean isXA) {

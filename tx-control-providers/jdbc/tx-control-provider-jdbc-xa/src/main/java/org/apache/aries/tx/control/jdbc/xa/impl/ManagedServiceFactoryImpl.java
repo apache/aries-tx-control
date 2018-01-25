@@ -19,7 +19,6 @@
 package org.apache.aries.tx.control.jdbc.xa.impl;
 
 import static java.util.Arrays.asList;
-import static org.apache.aries.tx.control.jdbc.common.impl.AbstractInternalJDBCConnectionProviderFactory.toBoolean;
 import static org.osgi.framework.Constants.OBJECTCLASS;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_DATABASE_NAME;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_DATASOURCE_NAME;
@@ -32,8 +31,6 @@ import static org.osgi.service.jdbc.DataSourceFactory.JDBC_SERVER_NAME;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_URL;
 import static org.osgi.service.jdbc.DataSourceFactory.JDBC_USER;
 import static org.osgi.service.jdbc.DataSourceFactory.OSGI_JDBC_DRIVER_CLASS;
-import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFactory.OSGI_RECOVERY_IDENTIFIER;
-import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFactory.XA_ENLISTMENT_ENABLED;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +50,6 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.jdbc.DataSourceFactory;
 import org.osgi.service.transaction.control.jdbc.JDBCConnectionProvider;
-import org.osgi.service.transaction.control.recovery.RecoverableXAResource;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.slf4j.Logger;
@@ -127,7 +123,6 @@ public class ManagedServiceFactoryImpl extends ConfigurationDefinedResourceFacto
 
 		private DataSourceFactory activeDsf;
 		private ServiceRegistration<JDBCConnectionProvider> serviceReg;
-		private ServiceRegistration<RecoverableXAResource> recoveryReg;
 		private AbstractJDBCConnectionProvider provider;
 
 		public ManagedJDBCResourceProvider(BundleContext context, String pid, Properties jdbcProperties,
@@ -176,46 +171,28 @@ public class ManagedServiceFactoryImpl extends ConfigurationDefinedResourceFacto
 			}
 
 			ServiceRegistration<JDBCConnectionProvider> reg = null;
-			ServiceRegistration<RecoverableXAResource> reg2 = null;
 			JDBCConnectionProviderImpl provider = null;
 			if (setDsf) {
 				try {
-					provider = new JDBCConnectionProviderFactoryImpl().getProviderFor(service,
+					provider = new JDBCConnectionProviderFactoryImpl(context).getProviderFor(service,
 							jdbcProperties, providerProperties);
-					String recoveryId = (String) providerProperties.get(OSGI_RECOVERY_IDENTIFIER);
-					if(recoveryId !=null) {
-						if(toBoolean(providerProperties, XA_ENLISTMENT_ENABLED, true)) {
-							LOG.warn("A JDBCResourceProvider has been configured with a recovery identifier {} but it has also been configured not to use XA transactions. No recovery will be available.", recoveryId);
-						} else {
-							reg2 = context.registerService(RecoverableXAResource.class, 
-									new RecoverableXAResourceImpl(recoveryId, provider, 
-											(String) providerProperties.get("recovery.user"),
-											(String) providerProperties.get(".recovery.password)")), 
-									getServiceProperties());
-						}
-					}
 					reg = context
 							.registerService(JDBCConnectionProvider.class, provider, getServiceProperties());
 
 					ServiceRegistration<JDBCConnectionProvider> oldReg;
-					ServiceRegistration<RecoverableXAResource> oldReg2;
 					AbstractJDBCConnectionProvider oldProvider;
 					synchronized (this) {
 						if(activeDsf == service) {
 							oldReg = serviceReg;
 							serviceReg = reg;
-							oldReg2 = recoveryReg;
-							recoveryReg = reg2;
 							oldProvider = this.provider;
 							this.provider = provider;
 						} else {
 							oldReg = reg;
-							oldReg2 = reg2;
 							oldProvider = provider;
 						}
 					}
 					safeUnregister(oldReg);
-					safeUnregister(oldReg2);
 					safeClose(oldProvider);
 				} catch (Exception e) {
 					LOG.error("An error occurred when creating the connection provider for {}.", pid, e);
@@ -226,7 +203,6 @@ public class ManagedServiceFactoryImpl extends ConfigurationDefinedResourceFacto
 						}
 					}
 					safeUnregister(reg);
-					safeUnregister(reg2);
 					safeClose(provider);
 				}
 			}
@@ -270,22 +246,18 @@ public class ManagedServiceFactoryImpl extends ConfigurationDefinedResourceFacto
 		public void removedService(ServiceReference<DataSourceFactory> reference, DataSourceFactory service) {
 			boolean dsfLeft;
 			ServiceRegistration<JDBCConnectionProvider> oldReg = null;
-			ServiceRegistration<RecoverableXAResource> oldReg2 = null;
 			AbstractJDBCConnectionProvider oldProvider = null;
 			synchronized (this) {
 				dsfLeft = activeDsf == service;
 				if (dsfLeft) {
 					activeDsf = null;
 					oldReg = serviceReg;
-					oldReg2 = recoveryReg;
 					oldProvider = provider;
 					serviceReg = null;
-					recoveryReg = null;
 					provider = null;
 				}
 			}
 			safeUnregister(oldReg);
-			safeUnregister(oldReg2);
 			safeClose(oldProvider);
 
 			if (dsfLeft) {

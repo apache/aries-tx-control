@@ -94,9 +94,9 @@ public class XAEnabledTxContextBindingConnectionTest {
 		Mockito.when(xaMock.getConnection()).thenReturn(rawConnection);
 		Mockito.when(xaMock.getXAResource()).thenReturn(xaResource);
 		
-		localProvider = new JDBCConnectionProviderImpl(dataSource, false, true, null);
+		localProvider = new JDBCConnectionProviderImpl(dataSource, false, true, null, null, null);
 		xaProvider = new JDBCConnectionProviderImpl(new XADataSourceMapper(xaDataSource), 
-				true, false, null);
+				true, false, null, null, null);
 		
 		localConn = new XAEnabledTxContextBindingConnection(control, localProvider, 
 				id, false, true, null);
