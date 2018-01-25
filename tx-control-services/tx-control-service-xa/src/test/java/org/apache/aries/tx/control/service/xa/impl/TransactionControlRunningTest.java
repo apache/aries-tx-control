@@ -94,6 +94,24 @@ public class TransactionControlRunningTest {
 	}
 
 	@Test
+	public void testRequiredMarkedRollbackInPrecompletion() {
+		
+		AtomicReference<TransactionStatus> finalStatus = new AtomicReference<>();
+		
+		txControl.required(() -> {
+			
+			assertTrue(txControl.activeTransaction());
+			
+			txControl.getCurrentContext().postCompletion(finalStatus::set);
+			
+			txControl.getCurrentContext().preCompletion(txControl::setRollbackOnly);
+			return null;
+		});
+		
+		assertEquals(ROLLED_BACK, finalStatus.get());
+	}
+
+	@Test
 	public void testRequiredUserException() {
 		
 		AtomicReference<TransactionStatus> finalStatus = new AtomicReference<>();

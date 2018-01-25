@@ -315,10 +315,11 @@ public class TransactionContextImpl extends AbstractTransactionContextImpl imple
 						if (re.getCause() instanceof SetRollbackOnlyException) {
 							// This means that a pre-completion callback called setRollbackOnly
 							// which can be safely ignored (i.e. it's not really an exception)
-						}
-						TransactionRolledBackException tre = 
+						} else {
+							TransactionRolledBackException tre = 
 								new TransactionRolledBackException(re.getMessage(), re);
-						throw tre;
+							throw tre;
+						}
 					}
 				}
 			} catch (Exception e) {
