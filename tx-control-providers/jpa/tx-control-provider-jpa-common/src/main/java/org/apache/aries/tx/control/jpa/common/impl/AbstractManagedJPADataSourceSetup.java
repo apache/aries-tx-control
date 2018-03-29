@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.aries.tx.control.resource.common.impl.LifecycleAware;
 import org.osgi.framework.BundleContext;
@@ -90,11 +92,11 @@ public abstract class AbstractManagedJPADataSourceSetup implements LifecycleAwar
 		DataSourceFactory service = context.getService(reference);
 		AbstractManagedJPAEMFLocator toReturn;
 		try {
-			Map<String, Object> jpaProps = decorateJPAProperties(service, 
+			Supplier<Map<String, Object>> jpaPropsProvider = () -> decorateJPAProperties(service, 
 					unmodifiableMap(providerProperties), (Properties) jdbcProperties.clone(), 
 					new HashMap<>(baseJPAProperties));
-			toReturn = getManagedJPAEMFLocator(context, pid, jpaProps, providerProperties, 
-					() -> cleanupOnClose(jpaProps));
+			toReturn = getManagedJPAEMFLocator(context, pid, jpaPropsProvider, providerProperties, 
+					jpaProps -> cleanupOnClose(jpaProps));
 		} catch (Exception e) {
 			LOG.error("An error occured creating the Resource provider for pid {}", pid, e);
 			return null;
@@ -106,12 +108,12 @@ public abstract class AbstractManagedJPADataSourceSetup implements LifecycleAwar
 
 	protected abstract Map<String, Object> decorateJPAProperties(DataSourceFactory dsf, 
 			Map<String, Object> providerProperties, Properties jdbcProperties,
-			Map<String, Object> jpaProperties) throws Exception;
+			Map<String, Object> jpaProperties);
 	
 	protected abstract void cleanupOnClose(Map<String, Object> jpaProperties);
 
 	protected abstract AbstractManagedJPAEMFLocator getManagedJPAEMFLocator(BundleContext context, String pid, 
-			Map<String, Object> jpaProps, Map<String, Object> providerProperties, Runnable onClose) throws Exception;
+			Supplier<Map<String, Object>> jpaProps, Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) throws Exception;
 
 	private void updateService(ServiceReference<DataSourceFactory> reference, AbstractManagedJPAEMFLocator locator) {
 		boolean setDsf;

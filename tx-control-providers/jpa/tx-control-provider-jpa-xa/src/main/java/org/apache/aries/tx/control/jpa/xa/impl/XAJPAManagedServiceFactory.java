@@ -50,7 +50,7 @@ public class XAJPAManagedServiceFactory extends AbstractJPAManagedServiceFactory
 	@Override
 	protected AbstractManagedJPAEMFLocator emfTracking(BundleContext context, String pid, Map<String, Object> properties,
 			Map<String, Object> jpaProps) throws InvalidSyntaxException, ConfigurationException {
-		return new XAJPAEMFLocator(context, pid, jpaProps, properties, null);
+		return new XAJPAEMFLocator(context, pid, () -> jpaProps, properties, null);
 	}
 
 	@Override

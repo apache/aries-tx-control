@@ -108,7 +108,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 						emf.close();
 					});
 			};
-		return new DelayedJPAEntityManagerProvider(create);
+		return new DelayedJPAEntityManagerProvider(create, () -> {});
 	}
 
 	public AbstractJPAEntityManagerProvider getProviderFor(EntityManagerFactoryBuilder emfb, 

@@ -48,8 +48,10 @@ import org.osgi.framework.BundleException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.transaction.control.ScopedWorkException;
+import org.osgi.service.transaction.control.TransactionControl;
 import org.osgi.service.transaction.control.TransactionException;
 import org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFactory;
+import org.osgi.service.transaction.control.jpa.JPAEntityManagerProvider;
 import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 
 @RunWith(PaxExam.class)
@@ -99,18 +101,24 @@ public class JPALifecycleTest extends AbstractJPATransactionTest {
 	}
 
 	@Test
-	public void testStopOfTxControlBundle() {
+	public void testStopOfTxControlBundle()  throws Exception {
 		doBundleStoppingTest(b -> b.getSymbolicName().contains("tx-control-service"),
 				"The transaction control service is closed");
 	}
 
 	@Test
-	public void testStopOfJPABundle() {
+	public void testStopOfJPABundle() throws Exception {
 		doBundleStoppingTest(b -> b.getSymbolicName().contains("tx-control-provider-jpa"),
 				"There was a problem getting hold of a database connection");
 	}
 
-	private void doBundleStoppingTest(Predicate<Bundle> p, String exceptionMessage) {
+	@Test
+	public void testStopOfJPAService() throws Exception {
+		doBundleStoppingTest(b -> b.getSymbolicName().contains("org.apache.aries.jpa.container"),
+				"There was a problem getting hold of a database connection");
+	}
+
+	private void doBundleStoppingTest(Predicate<Bundle> p, String exceptionMessage) throws Exception {
 		Message m = new Message();
 		m.message = "Hello World";
 		txControl.required(() -> {em.persist(m); return null;});
@@ -149,6 +157,17 @@ public class JPALifecycleTest extends AbstractJPATransactionTest {
 			});
 			getService(JPAEntityManagerProviderFactory.class, 5000);
 		}
+		if(isConfigured()) {
+			txControl = getService(TransactionControl.class, 5000);
+			em = getService(JPAEntityManagerProvider.class, 5000).getResource(txControl);
+		} else {
+			populateTxEntityManager();
+		}
+			
+		m.id = null;
+		txControl.required(() -> {em.persist(m); return null;});
+
+		assertEquals(m.message, txControl.notSupported(() -> em.find(Message.class, m.id).message));
 	}
 
 	@Test

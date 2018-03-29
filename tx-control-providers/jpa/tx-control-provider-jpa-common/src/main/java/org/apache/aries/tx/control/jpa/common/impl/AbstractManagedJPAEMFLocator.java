@@ -31,7 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.persistence.EntityManagerFactory;
 
@@ -59,9 +61,9 @@ public abstract class AbstractManagedJPAEMFLocator implements LifecycleAware,
 	
 	private final BundleContext context;
 	private final String pid;
-	private final Map<String, Object> jpaProperties;
+	private final Supplier<Map<String, Object>> jpaProperties;
 	private final Map<String, Object> providerProperties;
-	private final Runnable onClose;
+	private final Consumer<Map<String, Object>> onClose;
 	private final ServiceTracker<EntityManagerFactoryBuilder, EntityManagerFactoryBuilder> emfBuilderTracker;
 
 	private final AtomicReference<EntityManagerFactoryBuilder> activeEMFB = new AtomicReference<>();
@@ -69,8 +71,8 @@ public abstract class AbstractManagedJPAEMFLocator implements LifecycleAware,
 	
 	private final AtomicReference<ServiceRegistration<JPAEntityManagerProvider>> serviceReg = new AtomicReference<>();
 
-	public AbstractManagedJPAEMFLocator(BundleContext context, String pid, Map<String, Object> jpaProperties,
-			Map<String, Object> providerProperties, Runnable onClose) throws InvalidSyntaxException, ConfigurationException {
+	public AbstractManagedJPAEMFLocator(BundleContext context, String pid, Supplier<Map<String, Object>> jpaProperties,
+			Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) throws InvalidSyntaxException, ConfigurationException {
 		this.context = context;
 		this.pid = pid;
 		this.jpaProperties = jpaProperties;
@@ -176,8 +178,10 @@ public abstract class AbstractManagedJPAEMFLocator implements LifecycleAware,
 
 		if (setEMFB) {
 			AbstractJPAEntityManagerProvider provider = null;
+			Map<String, Object> jpaProps = jpaProperties.get();
+			Runnable close = () -> onClose.accept(jpaProps);
 			try {
-				provider = getResourceProvider(context, service, reference, jpaProperties, providerProperties, onClose);
+				provider = getResourceProvider(context, service, reference, jpaProps, providerProperties, close);
 				providerObject.set(provider);
 				ServiceRegistration<JPAEntityManagerProvider> reg = context
 						.registerService(JPAEntityManagerProvider.class, provider, getServiceProperties());
@@ -189,6 +193,9 @@ public abstract class AbstractManagedJPAEMFLocator implements LifecycleAware,
 				activeEMFB.compareAndSet(service, null);
 				if(provider != null) {
 					provider.close();
+				} else {
+					// Make sure that we don't leak the DataSource
+					close.run();
 				}
 					
 			}

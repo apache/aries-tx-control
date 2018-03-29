@@ -94,12 +94,15 @@ public abstract class AbstractJPATransactionTest {
 	protected final List<ServiceTracker<?,?>> trackers = new ArrayList<>();
 	@Before
 	public void setUp() throws Exception {
-		
-		txControl = getService(TransactionControl.class, System.getProperty(TX_CONTROL_FILTER), 5000);
-		
 		server = Server.createTcpServer("-tcpPort", "0");
 		server.start();
 		
+		populateTxEntityManager();
+	}
+
+	protected void populateTxEntityManager() throws Exception {
+		txControl = getService(TransactionControl.class, System.getProperty(TX_CONTROL_FILTER), 5000);
+
 		String jdbcUrl = "jdbc:h2:tcp://127.0.0.1:" + server.getPort() + "/" + getRemoteDBPath();
 		
 		boolean configuredProvider = isConfigured();

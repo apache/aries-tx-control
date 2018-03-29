@@ -26,6 +26,8 @@ import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFa
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -81,7 +83,7 @@ public class LocalJPADataSourceSetup extends AbstractManagedJPADataSourceSetup {
 
 	@Override
 	protected AbstractManagedJPAEMFLocator getManagedJPAEMFLocator(BundleContext context, String pid,
-			Map<String, Object> jpaProps, Map<String, Object> providerProperties, Runnable onClose) 
+			Supplier<Map<String, Object>> jpaProps, Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) 
 					throws InvalidSyntaxException, ConfigurationException {
 		return new LocalJPAEMFLocator(context, pid, jpaProps, providerProperties, onClose);
 	}

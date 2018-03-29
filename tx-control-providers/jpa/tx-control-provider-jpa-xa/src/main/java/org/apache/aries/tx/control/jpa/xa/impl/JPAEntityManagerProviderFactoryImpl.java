@@ -104,7 +104,7 @@ public class JPAEntityManagerProviderFactoryImpl implements InternalJPAEntityMan
 			create = handleNormalDataSource(emfb, resourceProviderPropsToUse, jpaPropsToUse);
 		}
 			
-		return new DelayedJPAEntityManagerProvider(create);
+		return new DelayedJPAEntityManagerProvider(create, () -> {});
 	}
 
 	private Function<ThreadLocal<TransactionControl>, AbstractJPAEntityManagerProvider> handleJDBCResourceProvider(

@@ -20,6 +20,8 @@ package org.apache.aries.tx.control.jpa.xa.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.aries.tx.control.jpa.common.impl.AbstractJPAEntityManagerProvider;
 import org.apache.aries.tx.control.jpa.common.impl.AbstractManagedJPAEMFLocator;
@@ -32,8 +34,8 @@ import org.osgi.service.jpa.EntityManagerFactoryBuilder;
 
 public class XAJPAEMFLocator extends AbstractManagedJPAEMFLocator {
 
-	public XAJPAEMFLocator(BundleContext context, String pid, Map<String, Object> jpaProperties,
-			Map<String, Object> providerProperties, Runnable onClose) throws InvalidSyntaxException, ConfigurationException {
+	public XAJPAEMFLocator(BundleContext context, String pid, Supplier<Map<String, Object>> jpaProperties,
+			Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) throws InvalidSyntaxException, ConfigurationException {
 		super(context, pid, jpaProperties, providerProperties, onClose);
 	}
 
@@ -48,6 +50,6 @@ public class XAJPAEMFLocator extends AbstractManagedJPAEMFLocator {
 		return new DelayedJPAEntityManagerProvider(t -> {
 			return new JPAEntityManagerProviderFactoryImpl(context).getProviderFor(service,
 					jpaProps, providerProps, t, onClose);
-		});
+		}, onClose);
 	}
 }

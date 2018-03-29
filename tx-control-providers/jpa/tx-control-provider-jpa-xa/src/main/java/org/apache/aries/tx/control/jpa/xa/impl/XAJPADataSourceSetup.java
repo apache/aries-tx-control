@@ -25,6 +25,8 @@ import static org.osgi.service.transaction.control.jdbc.JDBCConnectionProviderFa
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -51,7 +53,7 @@ public class XAJPADataSourceSetup extends AbstractManagedJPADataSourceSetup {
 
 	@Override
 	protected Map<String, Object> decorateJPAProperties(DataSourceFactory dsf, Map<String, Object> providerProperties,
-			Properties jdbcProperties, Map<String, Object> jpaProperties) throws Exception {
+			Properties jdbcProperties, Map<String, Object> jpaProperties) {
 		DataSource unpooled;
 		try {
 			if (toBoolean(providerProperties, USE_DRIVER, false)) {
@@ -81,7 +83,7 @@ public class XAJPADataSourceSetup extends AbstractManagedJPADataSourceSetup {
 
 	@Override
 	protected AbstractManagedJPAEMFLocator getManagedJPAEMFLocator(BundleContext context, String pid,
-			Map<String, Object> jpaProps, Map<String, Object> providerProperties, Runnable onClose) throws Exception {
+			Supplier<Map<String, Object>> jpaProps, Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) throws Exception {
 		return new XAJPAEMFLocator(context, pid, jpaProps, providerProperties, onClose);
 	}
 }

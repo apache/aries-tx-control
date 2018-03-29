@@ -19,6 +19,8 @@
 package org.apache.aries.tx.control.jpa.local.impl;
 
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.apache.aries.tx.control.jpa.common.impl.AbstractJPAEntityManagerProvider;
 import org.apache.aries.tx.control.jpa.common.impl.AbstractManagedJPAEMFLocator;
@@ -30,8 +32,8 @@ import org.osgi.service.jpa.EntityManagerFactoryBuilder;
 
 public class LocalJPAEMFLocator extends AbstractManagedJPAEMFLocator {
 
-	public LocalJPAEMFLocator(BundleContext context, String pid, Map<String, Object> jpaProperties,
-			Map<String, Object> providerProperties, Runnable onClose) throws InvalidSyntaxException, ConfigurationException {
+	public LocalJPAEMFLocator(BundleContext context, String pid, Supplier<Map<String, Object>> jpaProperties,
+			Map<String, Object> providerProperties, Consumer<Map<String, Object>> onClose) throws InvalidSyntaxException, ConfigurationException {
 		super(context, pid, jpaProperties, providerProperties, onClose);
 	}
 

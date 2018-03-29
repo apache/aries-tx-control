@@ -31,14 +31,18 @@ public class DelayedJPAEntityManagerProvider extends AbstractJPAEntityManagerPro
 	
 	private final ThreadLocal<TransactionControl> commonStore = new ThreadLocal<>();
 	
+	private final Runnable unusedClose;
+
 	private AbstractJPAEntityManagerProvider delegate;
 	
 	private boolean closed;
+
 	
 	public DelayedJPAEntityManagerProvider(Function<ThreadLocal<TransactionControl>, 
-			AbstractJPAEntityManagerProvider> wireToTransactionControl) {
+			AbstractJPAEntityManagerProvider> wireToTransactionControl, Runnable unusedClose) {
 		super(null, null);
 		this.wireToTransactionControl = wireToTransactionControl;
+		this.unusedClose = unusedClose;
 	}
 
 	@Override
@@ -62,11 +66,15 @@ public class DelayedJPAEntityManagerProvider extends AbstractJPAEntityManagerPro
 				closed = true;
 				toClose = delegate;
 				delegate = null;
+			} else {
+				return;
 			}
 		}
 		
 		if(toClose != null) {
 			toClose.close();
+		} else {
+			unusedClose.run();
 		}
 	}
 
