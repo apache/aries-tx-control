@@ -40,19 +40,7 @@
         It is not complete and should not be deployed at runtime, instead it should be repackaged
         inside a complete implementation.
     </description>
-
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-common
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-common
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-services/tx-control-service-common
-        </url>
-	</scm>
-
+    
 	<dependencies>
 		<!-- OSGi API dependencies -->
 		<dependency>

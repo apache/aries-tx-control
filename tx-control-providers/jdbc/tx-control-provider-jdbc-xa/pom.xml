@@ -34,18 +34,6 @@
         This bundle contains a JDBC resource provider for use with the OSGi Transaction Control Service that supports XA and Local transactions.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jdbc/tx-control-provider-jdbc-xa
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jdbc/tx-control-provider-jdbc-xa
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jdbc/tx-control-provider-jdbc-xa
-        </url>
-	</scm>
-
 	<dependencies>
 		<!-- Internal Aries project dependencies -->
         <dependency>

@@ -34,19 +34,6 @@
         This bundle contains a lightweight OSGi Transaction Control Service implementation suitable for resource-local transactions.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-local
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-local
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-services/tx-control-service-local
-        </url>
-	</scm>
-
-
 	<dependencies>
 		<!-- Internal Aries project dependencies -->
 		<dependency>

@@ -36,18 +36,6 @@
         implementations. It is not complete and should not be deployed at runtime, instead it should 
         be repackaged inside a complete implementation.
     </description>
-    
-    <scm>
-        <connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/tx-control-provider-common
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/tx-control-provider-common
-        </developerConnection>
-        <url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/tx-control-provider-common
-        </url>
-    </scm>
 
     <dependencies>
         <!-- OSGi dependencies -->

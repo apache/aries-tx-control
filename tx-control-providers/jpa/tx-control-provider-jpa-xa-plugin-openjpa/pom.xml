@@ -34,18 +34,6 @@
         This bundle contains an OpenJPA plugin for the Aries Transaction control JPA resource provider.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin-openjpa
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin-openjpa
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin-openjpa
-        </url>
-	</scm>
-
 	<dependencies>
 		<!-- OSGi API dependencies -->
         <dependency>

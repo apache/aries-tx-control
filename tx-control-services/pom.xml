@@ -31,17 +31,6 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<description>Transaction Control service implementations Reactor</description>
-	<scm>
-		<connection>
-			scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services
-		</connection>
-		<developerConnection>
-			scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services
-		</developerConnection>
-		<url>
-			http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-services
-		</url>
-	</scm>
 
     <modules>
         <module>tx-control-service-parent</module>

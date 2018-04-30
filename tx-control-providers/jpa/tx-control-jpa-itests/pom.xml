@@ -33,19 +33,6 @@
         JPA Integration tests using the Transaction Control service
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-jpa-itests
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-jpa-itests
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/proxy/tx-control/tx-control-providers/jpa/tx-control-jpa-itests
-        </url>
-	</scm>
-
-
 	<properties>
 		<exam.version>4.8.0</exam.version>
 		<url.version>1.6.0</url.version>

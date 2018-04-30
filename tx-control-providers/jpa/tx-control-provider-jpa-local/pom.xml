@@ -34,18 +34,6 @@
         This bundle contains a JPA resource provider for use with the OSGi Transaction Control Service that supports local transactions.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-local
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-local
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-local
-        </url>
-	</scm>
-
 	<dependencies>
 		<!-- Internal Aries project dependencies -->
 		<dependency>

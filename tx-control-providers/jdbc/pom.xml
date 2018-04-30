@@ -31,17 +31,6 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<description>Apache Aries Transaction Control JDBC Resource Providers.</description>
-	<scm>
-		<connection>
-			scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jdbc
-		</connection>
-		<developerConnection>
-			scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jdbc
-		</developerConnection>
-		<url>
-			http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jdbc
-		</url>
-	</scm>
 
     <modules>
         <module>tx-control-provider-jdbc-parent</module>

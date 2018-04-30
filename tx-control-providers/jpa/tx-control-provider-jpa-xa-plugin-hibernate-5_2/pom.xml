@@ -34,18 +34,6 @@
         This bundle contains a Hibernate plugin for the Aries Transaction control JPA resource provider.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin-hibernate-5_2
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin--hibernate-5_2
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-xa-plugin--hibernate-5_2
-        </url>
-	</scm>
-
 	<dependencies>
 		<!-- Internal Aries project dependencies -->
 		<dependency>

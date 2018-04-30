@@ -32,15 +32,10 @@
 	<packaging>pom</packaging>
 	<description>Apache Aries Transaction Control Reactor POM</description>
 	<scm>
-		<connection>
-			scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control
-		</connection>
-		<developerConnection>
-			scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control
-		</developerConnection>
-		<url>
-			http://svn.apache.org/viewvc/aries/trunk/tx-control
-		</url>
+        <connection>scm:git:http://gitbox.apache.org/repos/asf/aries-tx-control.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/aries-tx-control.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=aries-tx-control.git</url>
+        <tag>HEAD</tag>
 	</scm>
 
 	<profiles>

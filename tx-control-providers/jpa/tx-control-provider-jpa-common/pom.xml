@@ -37,18 +37,6 @@
         be repackaged inside a complete implementation.
     </description>
 
-    <scm>
-        <connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-common
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-common
-        </developerConnection>
-        <url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-providers/jpa/tx-control-provider-jpa-common
-        </url>
-    </scm>
-
     <dependencies>
         <!-- Internal Aries project dependencies -->
         <dependency>

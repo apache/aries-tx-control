@@ -37,18 +37,6 @@
         recovery for recoverable Resource Providers.
     </description>
 
-	<scm>
-		<connection>
-            scm:svn:http://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-xa
-        </connection>
-		<developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/aries/trunk/tx-control/tx-control-services/tx-control-service-xa
-        </developerConnection>
-		<url>
-            http://svn.apache.org/viewvc/aries/trunk/tx-control/tx-control-services/tx-control-service-xa
-        </url>
-	</scm>
-
 	<dependencies>
 		<!-- Internal Aries project dependencies -->
 		<dependency>
