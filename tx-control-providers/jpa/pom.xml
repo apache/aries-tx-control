@@ -22,13 +22,13 @@
 	<parent>
         <groupId>org.apache.aries.tx-control</groupId>
         <artifactId>tx-control-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
+		<version>1.0.0</version>
 		<relativePath>../../tx-control-parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-provider-jpa</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	<description>Apache Aries Transaction Control JPA Resource Providers.</description>
 
