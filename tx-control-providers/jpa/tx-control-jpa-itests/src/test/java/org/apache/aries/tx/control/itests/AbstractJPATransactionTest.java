@@ -53,7 +53,7 @@ import org.ops4j.pax.exam.ProbeBuilder;
 import org.ops4j.pax.exam.TestProbeBuilder;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
-import org.ops4j.pax.exam.spi.reactors.PerMethod;
+import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkUtil;
@@ -68,7 +68,7 @@ import org.osgi.service.transaction.control.jpa.JPAEntityManagerProviderFactory;
 import org.osgi.util.tracker.ServiceTracker;
 
 @RunWith(PaxExam.class)
-@ExamReactorStrategy(PerMethod.class)
+@ExamReactorStrategy(PerClass.class)
 public abstract class AbstractJPATransactionTest {
 
 	protected static final String TX_CONTROL_FILTER = "tx.control.filter";
