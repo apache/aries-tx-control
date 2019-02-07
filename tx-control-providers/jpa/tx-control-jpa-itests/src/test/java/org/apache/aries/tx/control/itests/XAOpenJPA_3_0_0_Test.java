@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import org.ops4j.pax.exam.CoreOptions;
 import org.ops4j.pax.exam.Option;
 
-public class SimpleOpenJPA_3_0_0_Test extends AbstractSimpleTransactionTest {
+public class XAOpenJPA_3_0_0_Test extends XAJPATransactionTest {
 
 	protected Dictionary<String, Object> getBaseProperties() {
 		Dictionary<String, Object> base = new Hashtable<>();
