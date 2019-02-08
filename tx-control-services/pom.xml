@@ -37,6 +37,7 @@
         <module>tx-control-service-common</module>
         <module>tx-control-service-local</module>
         <module>tx-control-service-xa</module>
+        <module>tx-control-service-itests</module>
     </modules>
 
 </project>
