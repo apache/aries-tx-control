@@ -37,7 +37,7 @@
 			<dependency>
 				<groupId>org.apache.aries.tx-control</groupId>
 				<artifactId>tx-control-provider-common</artifactId>
-				<version>1.0.0</version>
+				<version>${project.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>

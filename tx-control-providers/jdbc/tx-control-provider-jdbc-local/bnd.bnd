@@ -39,6 +39,8 @@ Private-Package: org.apache.aries.tx.control.jdbc.*, \
 
 Import-Package: !com.codahale.*, \
                 !com.zaxxer.hikari.metrics.dropwizard, \
+                !com.zaxxer.hikari.metrics.micrometer, \
+                !io.micrometer.core.instrument, \
                 !javassist.*, \
                 org.osgi.service.transaction.control, \
                 org.osgi.service.transaction.control.jdbc, \

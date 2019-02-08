@@ -73,13 +73,13 @@
 			<groupId>org.apache.aries.tx-control</groupId>
 			<artifactId>tx-control-provider-jdbc-local</artifactId>
 			<scope>test</scope>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.aries.tx-control</groupId>
 			<artifactId>tx-control-provider-jdbc-xa</artifactId>
 			<scope>test</scope>
-			<version>1.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.osgi</groupId>

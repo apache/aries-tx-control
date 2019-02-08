@@ -35,6 +35,17 @@
     </description>
 
 	<dependencies>
+		<!-- 
+		    Hikari CP dependency 
+		    This must come before the JDBC dependency to ensure
+		    we embed the dependent version not whatever is
+		    repackaged in the jdbc-xa bundle we depend on
+		-->
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+		</dependency>
+
 		<!-- Internal Aries project dependencies -->
 		<dependency>
             <groupId>org.apache.aries.tx-control</groupId>
@@ -99,33 +110,28 @@
 		<dependency>
             <groupId>org.apache.aries.tx-control</groupId>
             <artifactId>tx-control-provider-jpa-xa-plugin-eclipselink</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
             <groupId>org.apache.aries.tx-control</groupId>
             <artifactId>tx-control-provider-jpa-xa-plugin-hibernate-5_0</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
             <groupId>org.apache.aries.tx-control</groupId>
             <artifactId>tx-control-provider-jpa-xa-plugin-hibernate-5_2</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 		<dependency>
             <groupId>org.apache.aries.tx-control</groupId>
             <artifactId>tx-control-provider-jpa-xa-plugin-openjpa</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
-		<!-- Hikari CP dependency -->
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-		</dependency>
 
 		<!-- Logging dependencies -->
 		<dependency>
