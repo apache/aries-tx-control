@@ -23,3 +23,4 @@ If you wish to use entirely lightweight, resource-local transactions then it is 
 If two-phase commit is needed across multiple resources then an XA capable service implementation and relevant xa capable resource provider(s) must be used.
 
 It is not advised to use multiple Transaction Control Service implementations at the same time. This will be confusing, and may lead to problems if different parts of your application bind to different service implementations. If you do choose to deploy multiple Transaction Control services then please ensure that the different parts of your application target the correct service implementation.
+ 
