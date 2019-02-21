@@ -22,7 +22,7 @@
 	<parent>
 		<groupId>org.apache.aries.tx-control</groupId>
 		<artifactId>tx-control-service-parent</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2-SNAPSHOT</version>
 		<relativePath>../tx-control-service-parent/pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.aries.tx-control</groupId>
@@ -33,7 +33,7 @@
 	  If we need an update of this project then it ripples through
 	  all of the the Transaction Control service implementations
 	 -->
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 
 	<description>
         This jar contains a common code for building OSGi Transaction Control Service implementations.

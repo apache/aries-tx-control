@@ -22,14 +22,14 @@
 	<parent>
         <groupId>org.apache.aries.tx-control</groupId>
         <artifactId>tx-control-provider-jdbc-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2-SNAPSHOT</version>
         <relativePath>../tx-control-provider-jdbc-parent/pom.xml</relativePath>
     </parent>
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-provider-jdbc-common</artifactId>
 	<packaging>jar</packaging>
 	<name>OSGi Transaction Control JDBC Resource Provider - Common Code</name>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 
 	<description>
         This jar contains a common code for building OSGi Transaction Control JDBCConnectionProvider 
