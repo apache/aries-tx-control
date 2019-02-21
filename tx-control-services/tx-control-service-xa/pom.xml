@@ -22,13 +22,13 @@
 	<parent>
 		<groupId>org.apache.aries.tx-control</groupId>
 		<artifactId>tx-control-service-parent</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 		<relativePath>../tx-control-service-parent/pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-service-xa</artifactId>
 	<name>Apache Aries OSGi Transaction Control Service - XA Transactions</name>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 
 	<description>
         This bundle contains an OSGi Transaction Control Service implementation based on

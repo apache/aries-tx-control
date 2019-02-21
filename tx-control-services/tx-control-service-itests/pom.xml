@@ -22,12 +22,12 @@
     <parent>
         <groupId>org.apache.aries.tx-control</groupId>
         <artifactId>tx-control-service-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
         <relativePath>../tx-control-service-parent/pom.xml</relativePath>
     </parent>
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-service-itests</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>Apache Aries Transaction Control Service iTests</name>
 	<description>
         Integration tests for the Aries Transaction Control service implementations

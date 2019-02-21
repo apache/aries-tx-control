@@ -22,13 +22,13 @@
 	<parent>
         <groupId>org.apache.aries.tx-control</groupId>
         <artifactId>tx-control-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
         <relativePath>../tx-control-parent</relativePath>
 	</parent>
 
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-services</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<packaging>pom</packaging>
 	<description>Transaction Control service implementations Reactor</description>
 

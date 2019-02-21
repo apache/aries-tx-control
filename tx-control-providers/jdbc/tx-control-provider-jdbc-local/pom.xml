@@ -22,13 +22,13 @@
 	<parent>
 		<groupId>org.apache.aries.tx-control</groupId>
 		<artifactId>tx-control-provider-jdbc-parent</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<version>1.0.1</version>
 		<relativePath>../tx-control-provider-jdbc-parent/pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.aries.tx-control</groupId>
 	<artifactId>tx-control-provider-jdbc-local</artifactId>
 	<name>OSGi Transaction Control JDBC Resource Provider - Local Transactions</name>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 
 	<description>
         This bundle contains a JDBC resource provider for use with the OSGi Transaction Control Service that supports local transactions.
